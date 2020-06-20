@@ -1,14 +1,17 @@
 import axios from 'axios';
 
-const account = axios.create({
-  baseURL:
-    process.env.NODE_ENV === 'production'
-      ? process.env.PROD_API
-      : process.env.HML_API,
+/**
+ * Serivce for managing accounts
+ * @returns Axios instances
+ */
 
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+const api = {
+  puppy: axios.create({
+    baseURL: process.env.API_PUPPY_URL,
+  }),
+  giphy: axios.create({
+    baseURL: process.env.API_GIPHY_URL,
+  }),
+};
 
-export default account;
+export default api;
