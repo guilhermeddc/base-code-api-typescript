@@ -5,7 +5,6 @@ export default async function (title: string) {
   const data = await api.giphy.get(
     `/search?q=${title.trim()}&api_key=${apiKey}&limit=1`,
   );
-  const url = (await data.data.data[0].images.original.url) as string;
-
+  const url = data.data.data[0].images.original.url as string;
   return url;
 }

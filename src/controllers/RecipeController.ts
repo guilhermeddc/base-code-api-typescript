@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import api from '../../services/api';
-import getGifs from '../../utils/getGifs';
+import api from '../services/api';
+import getGifs from '../utils/getGifs';
 
 interface IGiphy {
   data: {
@@ -59,18 +59,20 @@ class RecipeController {
 
     try {
       const recipes = await api.puppy.get(`/?i=${aux}`);
+      const recipesSerializedPromise = Promise.all(
+        recipes.data.results.map(async (recipe: IRecipes) => {
+          const data = {
+            title: recipe.title,
+            ingredients: recipe.ingredients.split(', ').sort(),
+            link: recipe.href,
+            gif: await getGifs(recipe.title),
+          };
 
-      const recipesSerialized = recipes.data.results.map((recipe: IRecipes) => {
-        const data = {
-          title: recipe.title,
-          ingredients: recipe.ingredients.split(', ').sort(),
-          link: recipe.href,
-          gif: getGifs(recipe.title),
-        };
-        return data;
-      });
+          return data;
+        }),
+      );
 
-      console.log(recipesSerialized[0].gif);
+      const recipesSerialized = await recipesSerializedPromise;
 
       return response
         .status(200)
