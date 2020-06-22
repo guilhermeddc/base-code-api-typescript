@@ -2,20 +2,6 @@ import { Request, Response } from 'express';
 import api from '../services/api';
 import getGifs from '../utils/getGifs';
 
-interface IGiphy {
-  data: {
-    data: [
-      {
-        images: {
-          original: {
-            url: string;
-          };
-        };
-      },
-    ];
-  };
-}
-
 interface IRecipes {
   title: string;
   href: string;
@@ -24,7 +10,7 @@ interface IRecipes {
 
 class RecipeController {
   /**
-   * Function that returns Recipe Puppy.
+   * Function that returns recipes.
    * @query ?i=eggs,flour
    * @return {object}
    *   200 - Success
@@ -32,24 +18,34 @@ class RecipeController {
    * Response:
    *
    * {
-   *    "title": "Recipe Puppy",
-   *    "version": 0.1,
-   *    "href": "http://www.recipepuppy.com/",
-   *    "results": [
+   *    "keywords": [ "eggs", "flour" ],
+   *    "recipes": [
    *        {
    *            "title": "Ginger Champagne",
-   *            "href": "http://allrecipes.com/Recipe/Ginger-Champagne/Detail.aspx",
-   *            "ingredients": "champagne, ginger, ice, vodka",
-   *            "thumbnail": "http://img.recipepuppy.com/1.jpg"
+   *            "ingredients": ["eggs", "flour", "ice", "vodka"],
+   *            "link": "http://www.kraftfoods.com/kf/recipes/savory-deviled-eggs-55779.aspx",
+   *            "gif": "https://media0.giphy.com/media/qJkRbWM1MfVjq/giphy.gif?cid=e3ed6ff46c8476f72c0833dd3f1e1686610c4261da789bd9&rid=giphy.gif"
    *        }
    *    ]
    * }
    */
 
   async getRecipes(request: Request, response: Response) {
-    const aux = request.query.i as string;
+    const i = request.query.i as string;
 
-    const ingredients = aux.split(',').sort();
+    if (i === undefined) {
+      return response
+        .status(401)
+        .json({ message: 'Put an ingredient in the menus' });
+    }
+
+    let ingredients = [];
+
+    if (i.includes(',')) {
+      ingredients = i.split(',').sort();
+    } else {
+      ingredients.push(i);
+    }
 
     if (ingredients.length > 3) {
       return response
@@ -58,7 +54,7 @@ class RecipeController {
     }
 
     try {
-      const recipes = await api.puppy.get(`/?i=${aux}`);
+      const recipes = await api.puppy.get(`/?i=${i}`);
       const recipesSerializedPromise = Promise.all(
         recipes.data.results.map(async (recipe: IRecipes) => {
           const data = {
