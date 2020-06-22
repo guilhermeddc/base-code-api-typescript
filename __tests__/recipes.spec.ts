@@ -14,6 +14,9 @@ describe('Recipes', () => {
 
   it('Should return success with invalid params', async () => {
     mockPuppy.onGet('/').reply(200, {});
+    mockGiphy
+      .onGet(`/search?q=Marmite&api_key=${process.env.API_GIPHY_KEY}&limit=1`)
+      .reply(200, {});
 
     const response = await request(app).get('/api/v1/recipes?i=eggs');
 
